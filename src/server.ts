@@ -1,16 +1,11 @@
-import "dotenv/config";
 import fastify from "fastify";
-import { db as knex } from "./database.js";
 import { env } from "./env/index.js";
+import { transactionsRoutes } from "./routes/transactions.js";
 
 const app = fastify();
 
-app.get("/hello", async () => {
-    const transactions = await knex("transactions")
-    .where("amount", 500)
-    .select("*");
-
-    return transactions;
+app.register(transactionsRoutes, {
+    prefix: "transactions",
 });
 
 app.listen({
