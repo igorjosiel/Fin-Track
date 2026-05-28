@@ -6,7 +6,8 @@ import { type ITransaction } from "../@types/knex.js";
 
 export async function transactionsRoutes(app: FastifyInstance) {
     app.get("/", async (request, reply) => {
-        const transactions = await knex("transactions").select();
+        const transactions = await knex("transactions")
+            .select();
 
         return { transactions }
     });
@@ -18,9 +19,19 @@ export async function transactionsRoutes(app: FastifyInstance) {
 
         const { id } = getTransactionParamsSchema.parse(request.params);
 
-        const transaction = await knex<ITransaction>("transactions").where("id", id).first();
+        const transaction = await knex<ITransaction>("transactions")
+            .where("id", id)
+            .first();
 
         return { transaction }
+    });
+
+    app.get("/summary", async (request, reply) => {
+        const summary = await knex<ITransaction>("transactions")
+            .sum("amount", { as: "amount" })
+            .first();
+
+        return { summary }
     });
 
     app.post("/", async (request, reply) => {
