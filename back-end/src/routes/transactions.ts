@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import crypto from "node:crypto";
 import { db as knex } from "../database.js";
-import { type ITransaction } from "../@types/knex.js";
+import { type ITransaction } from "../@types/knex.d.ts";
 import { checkSessionIdExists } from "../../middlewares/check-session-id-exists.js";
 
 export async function transactionsRoutes(app: FastifyInstance) {
@@ -86,5 +86,31 @@ export async function transactionsRoutes(app: FastifyInstance) {
         });
 
         return reply.status(201).send();
+    });
+
+    app.put("/:id", async (request, reply) => {
+        const updateTransactionBodySchema = z.object({
+            title: z.string(),
+            amount: z.number(),
+            type: z.enum(['credit', 'debit']),
+        });
+
+        const transactionIdParamsSchema = z.object({
+            id: z.uuid(),
+        });
+
+        const { title, amount, type } = updateTransactionBodySchema.parse(request.body);
+        const { id } = transactionIdParamsSchema.parse(request.params);
+
+        let sessionId = request.cookies.sessionId;
+
+        await knex<ITransaction>("transactions")
+            .update({
+                title,
+                amount: type === "credit" ? amount : amount * -1,
+                session_id: sessionId
+            })
+            .where("id", "=", id)
+            .andWhere("session_id", sessionId);
     });
 }
