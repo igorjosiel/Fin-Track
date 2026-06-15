@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import crypto from "node:crypto";
 import { db as knex } from "../database.js";
-import { type ITransaction } from "../@types/knex.d.js";
+import { type ITransaction } from "../@types/knex.js";
 import { checkSessionIdExists } from "../../middlewares/check-session-id-exists.js";
 
 export async function transactionsRoutes(app: FastifyInstance) {
