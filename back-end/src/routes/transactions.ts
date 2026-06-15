@@ -104,13 +104,38 @@ export async function transactionsRoutes(app: FastifyInstance) {
 
         let sessionId = request.cookies.sessionId;
 
+        if (!sessionId) {
+            sessionId = crypto.randomUUID();
+
+            reply.cookie("sessionId", sessionId, {
+                path: "/",
+                maxAge: 60 * 60 * 24 * 7 // 7 days
+            });
+        }
+
         await knex<ITransaction>("transactions")
             .update({
+                id,
                 title,
                 amount: type === "credit" ? amount : amount * -1,
                 session_id: sessionId
             })
             .where("id", "=", id)
             .andWhere("session_id", sessionId);
+    });
+
+    app.delete("/:id", async (request, apply) => {
+        const transactionIdParamsSchema = z.object({
+            id: z.uuid(),
+        });
+
+        const { id } = transactionIdParamsSchema.parse(request.params);
+
+        let sessionId = request.cookies.sessionId;
+
+        await knex<ITransaction>("transactions")
+            .where("id", "=", id)
+            .andWhere("session_id", "=", sessionId)
+            .del();
     });
 }
