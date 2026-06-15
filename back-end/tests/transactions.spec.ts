@@ -18,21 +18,25 @@ describe("Transactions routes", () => {
     });
 
     it("should be able to create a new transaction", async () => {
-        const response = await request(app.server).post("/transactions").send({
-            title: "New Transaction",
-            amount: 5000,
-            type: "credit"
-        });
+        const response = await request(app.server)
+            .post("/transactions")
+            .send({
+                title: "New Transaction",
+                amount: 5000,
+                type: "credit"
+            });
 
         expect(response.statusCode).toEqual(201);
     });
 
     it("should be able to list all the transactions", async () => {
-        const createTransactionResponse = await request(app.server).post("/transactions").send({
-            title: "New Transaction",
-            amount: 5000,
-            type: "credit"
-        });
+        const createTransactionResponse = await request(app.server)
+            .post("/transactions")
+            .send({
+                title: "New Transaction",
+                amount: 5000,
+                type: "credit"
+            });
 
         const cookies = createTransactionResponse.get("Set-Cookie");
 
@@ -50,11 +54,13 @@ describe("Transactions routes", () => {
     });
 
     it("should be able to list a specific transaction", async () => {
-        const createTransactionResponse = await request(app.server).post("/transactions").send({
-            title: "New Transaction",
-            amount: 5000,
-            type: "credit"
-        });
+        const createTransactionResponse = await request(app.server)
+            .post("/transactions")
+            .send({
+                title: "New Transaction",
+                amount: 5000,
+                type: "credit"
+            });
 
         const cookies = createTransactionResponse.get("Set-Cookie");
 
@@ -67,7 +73,7 @@ describe("Transactions routes", () => {
 
         const getTransactionResponse = await request(app.server)
             .get(`/transactions/${transactionId}`)
-            .get('Cookie', cookies)
+            .set('Cookie', cookies)
             .expect(200);
 
         expect(getTransactionResponse.body.transaction).toEqual(
@@ -79,21 +85,23 @@ describe("Transactions routes", () => {
     });
 
     it("should be able to get the summary", async () => {
-        const createTransactionResponse = await request(app.server).post("/transactions").send({
-            title: "Credit Transaction",
-            amount: 5000,
-            type: "credit"
-        });
+        const createTransactionResponse = await request(app.server)
+            .post("/transactions")
+            .send({
+                title: "Credit Transaction",
+                amount: 5000,
+                type: "credit"
+            });
 
         const cookies = createTransactionResponse.get("Set-Cookie");
 
         await request(app.server).post("/transactions")
-        .set('Cookie', cookies)
-        .send({
-            title: "Debit Transaction",
-            amount: 2000,
-            type: "debit"
-        });
+            .set('Cookie', cookies)
+            .send({
+                title: "Debit Transaction",
+                amount: 2000,
+                type: "debit"
+            });
 
         const summaryResponse = await request(app.server)
             .get("/transactions/summary")
