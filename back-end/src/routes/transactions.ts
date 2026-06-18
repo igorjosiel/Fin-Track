@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import crypto from "node:crypto";
 import { db as knex } from "../database.js";
@@ -9,9 +9,9 @@ export async function transactionsRoutes(app: FastifyInstance) {
     app.get(
         "/",
         { preHandler: [checkSessionIdExists] },
-        async (request, reply) => {
+        async (request: FastifyRequest, reply: FastifyReply) => {
             const { sessionId } = request.cookies;
-            const { page = 1, limit = 5, type, title } = request.query;
+            const { page = 1, limit = 5, type, title, sort, order } = request.query;
 
             const query = knex("transactions")
                 .where("session_id", sessionId);
@@ -26,6 +26,10 @@ export async function transactionsRoutes(app: FastifyInstance) {
 
             if (title) {
                 query.andWhereILike("title", `%${title}%`);
+            }
+
+            if (sort && order) {
+                query.orderBy(sort, order);
             }
 
             const transactions = await query
