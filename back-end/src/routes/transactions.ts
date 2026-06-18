@@ -11,10 +11,26 @@ export async function transactionsRoutes(app: FastifyInstance) {
         { preHandler: [checkSessionIdExists] },
         async (request, reply) => {
             const { sessionId } = request.cookies;
+            const { page = 1, limit = 5, type, title } = request.query;
 
-            const transactions = await knex("transactions")
-                .where("session_id", sessionId)
-                .select();
+            const query = knex("transactions")
+                .where("session_id", sessionId);
+
+            if (type === "credit") {
+                query.andWhere("amount", ">", 0);
+            }
+
+            if (type === "debit") {
+                query.andWhere("amount", "<", 0);
+            }
+
+            if (title) {
+                query.andWhereILike("title", `%${title}%`);
+            }
+
+            const transactions = await query
+                .limit(limit, { skipBinding: true })
+                .offset((page - 1) * limit);
 
             return { transactions }
         }
